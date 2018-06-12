@@ -61,7 +61,11 @@ class NodeManager(object):
         self.trace("setting up nodes")
         nodes = []
         for spec in self.specs:
-            nodes.append(self.setup_node(spec, putevent))
+            try:
+                nodes.append(self.setup_node(spec, putevent))
+            except Exception as e:
+                self.trace("error setting up %s: %s" % (spec, e))
+        self.trace("setup_nodes %r" % nodes)
         return nodes
 
     def setup_node(self, spec, putevent):

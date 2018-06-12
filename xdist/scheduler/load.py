@@ -78,7 +78,7 @@ class LoadScheduling(object):
         have finished collection.  The required number of initial
         nodes is defined by ``.numnodes``.
         """
-        return len(self.node2collection) >= self.numnodes
+        return len(self.node2collection) > 0
 
     @property
     def tests_finished(self):
@@ -87,6 +87,7 @@ class LoadScheduling(object):
             return False
         if self.pending:
             return False
+        print('node2pending', self.node2pending)
         for pending in self.node2pending.values():
             if len(pending) >= 2:
                 return False
@@ -116,6 +117,7 @@ class LoadScheduling(object):
         Called by the ``DSession.worker_workerready`` hook when it
         successfully bootstraps a new node.
         """
+        print("LS add_node", node)
         assert node not in self.node2pending
         self.node2pending[node] = []
 

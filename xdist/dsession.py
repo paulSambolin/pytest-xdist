@@ -64,6 +64,7 @@ class DSession(object):
         This means all nodes have executed all test items.  This is
         used by pytest_runtestloop to break out of its loop.
         """
+        print('session_finished?', self.shuttingdown, self._active_nodes)
         return bool(self.shuttingdown and not self._active_nodes)
 
     def report_line(self, line):
@@ -112,16 +113,22 @@ class DSession(object):
         assert self.sched is not None
 
         self.shouldstop = False
+        print('runtestloop about to start')
+        # import pdb; pdb.set_trace()
         while not self.session_finished:
             self.loop_once()
+            print('checking shouldstop')
             if self.shouldstop:
+                print('shouldstop is true')
                 self.triggershutdown()
                 raise Interrupted(str(self.shouldstop))
+        print('exiting loop; session_finished is true')
         return True
 
     def loop_once(self):
         """Process one callback from one of the workers."""
         while 1:
+            print('looping')
             if not self._active_nodes:
                 # If everything has died stop looping
                 self.triggershutdown()
@@ -159,8 +166,10 @@ class DSession(object):
 
         self.config.hook.pytest_testnodeready(node=node)
         if self.shuttingdown:
+            print('workerready_shuttingdown', node)
             node.shutdown()
         else:
+            print('node is ready', node)
             self.sched.add_node(node)
 
     def worker_workerfinished(self, node):
@@ -220,6 +229,7 @@ class DSession(object):
             return
         self.config.hook.pytest_xdist_node_collection_finished(node=node,
                                                                ids=ids)
+        # import pdb;pdb.set_trace()
         # tell session which items were effectively collected otherwise
         # the master node will finish the session with EXIT_NOTESTSCOLLECTED
         self._session.testscollected = len(ids)
@@ -299,7 +309,8 @@ class DSession(object):
                     self.countfailures)
 
     def triggershutdown(self):
-        self.log("triggering shutdown")
+        #import pdb; pdb.set_trace()
+        print('triggershutdown')
         self.shuttingdown = True
         for node in self.sched.nodes:
             node.shutdown()
