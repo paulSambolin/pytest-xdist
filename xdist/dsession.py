@@ -64,7 +64,6 @@ class DSession(object):
         This means all nodes have executed all test items.  This is
         used by pytest_runtestloop to break out of its loop.
         """
-        print('session_finished?', self.shuttingdown, self._active_nodes)
         return bool(self.shuttingdown and not self._active_nodes)
 
     def report_line(self, line):
@@ -113,43 +112,28 @@ class DSession(object):
         assert self.sched is not None
 
         self.shouldstop = False
-        print('runtestloop about to start')
-        # import pdb; pdb.set_trace()
         while not self.session_finished:
             self.loop_once()
-            print('checking shouldstop')
             if self.shouldstop:
-                print('shouldstop is true')
                 self.triggershutdown()
                 raise Interrupted(str(self.shouldstop))
-        print('exiting loop; session_finished is true')
         return True
 
     def loop_once(self):
         """Process one callback from one of the workers."""
         while 1:
-            print('recheck nodes')
-            print(self.trdist._status)
-            print(self.sched.nodes)
-            print(self._active_nodes)
-            for spec in self.trdist._specs:
-                if self.trdist._status.get(spec.id) == 'I':
-                    print('want to reconnect', spec)
-                    try:
-                        node = self.nodemanager.setup_node(spec, putevent=self.queue.put)
-                        self._active_nodes.add(node)
-                    except Exception as e:
-                        print("error reconnecting %s: %s" % (spec, e))
-
-            # for spec in 
-            # self.setup_node(spec, putevent))
-            # nodes = self.nodemanager.setup_nodes(putevent=self.queue.put)
-            # self._active_nodes.update(nodes)
             # if not self._active_nodes:
             #     # If everything has died stop looping
             #     self.triggershutdown()
             #     raise RuntimeError("Unexpectedly no active workers available")
-            print('queue.get')
+
+            for spec in self.trdist._specs:
+                if self.trdist._status.get(spec.id) == 'I':
+                    try:
+                        node = self.nodemanager.setup_node(spec, putevent=self.queue.put)
+                        self._active_nodes.add(node)
+                    except:
+                        pass
             try:
                 eventcall = self.queue.get(timeout=2.0)
                 break
@@ -160,7 +144,6 @@ class DSession(object):
         method = "worker_" + callname
         call = getattr(self, method)
         self.log("calling method", method, kwargs)
-        print('loop got', method)
         call(**kwargs)
         if self.sched.tests_finished:
             self.triggershutdown()
@@ -184,10 +167,8 @@ class DSession(object):
 
         self.config.hook.pytest_testnodeready(node=node)
         if self.shuttingdown:
-            print('workerready_shuttingdown', node)
             node.shutdown()
         else:
-            print('node is ready', node)
             self.sched.add_node(node)
 
     def worker_workerfinished(self, node):
@@ -247,7 +228,6 @@ class DSession(object):
             return
         self.config.hook.pytest_xdist_node_collection_finished(node=node,
                                                                ids=ids)
-        # import pdb;pdb.set_trace()
         # tell session which items were effectively collected otherwise
         # the master node will finish the session with EXIT_NOTESTSCOLLECTED
         self._session.testscollected = len(ids)
@@ -327,8 +307,7 @@ class DSession(object):
                     self.countfailures)
 
     def triggershutdown(self):
-        #import pdb; pdb.set_trace()
-        print('triggershutdown')
+        self.log("triggering shutdown")
         self.shuttingdown = True
         for node in self.sched.nodes:
             node.shutdown()

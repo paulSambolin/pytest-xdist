@@ -65,7 +65,6 @@ class NodeManager(object):
                 nodes.append(self.setup_node(spec, putevent))
             except Exception as e:
                 self.trace("error setting up %s: %s" % (spec, e))
-        self.trace("setup_nodes %r" % nodes)
         return nodes
 
     def setup_node(self, spec, putevent):
