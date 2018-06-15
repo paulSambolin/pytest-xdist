@@ -154,6 +154,7 @@ class NodeManager(object):
             source=source,
             gateways=[gateway],
         )
+        print('just called rsyncfinish')
 
 
 class HostRSync(execnet.RSync):
