@@ -122,6 +122,7 @@ class DSession(object):
     def loop_once(self):
         """Process one callback from one of the workers."""
         while 1:
+            print('looping')
             # if not self._active_nodes:
             #     # If everything has died stop looping
             #     self.triggershutdown()
@@ -129,11 +130,12 @@ class DSession(object):
 
             for spec in self.trdist._specs:
                 if self.trdist._status.get(spec.id) == 'I':
+                    print('want to reconnect', spec)
                     try:
                         node = self.nodemanager.setup_node(spec, putevent=self.queue.put)
                         self._active_nodes.add(node)
-                    except:
-                        pass
+                    except Exception as e:
+                        print('error reconnecting', e)
             try:
                 eventcall = self.queue.get(timeout=2.0)
                 break
@@ -144,6 +146,7 @@ class DSession(object):
         method = "worker_" + callname
         call = getattr(self, method)
         self.log("calling method", method, kwargs)
+        print('calling method', method, kwargs)
         call(**kwargs)
         if self.sched.tests_finished:
             self.triggershutdown()
