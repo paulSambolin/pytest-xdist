@@ -108,8 +108,9 @@ class WorkerInteractor(object):
         self.sendevent("testreport", data=data)
 
     def pytest_collectreport(self, report):
-        data = serialize_report(report)
-        self.sendevent("collectreport", data=data)
+        pass
+        # data = serialize_report(report)
+        # self.sendevent("collectreport", data=data)
 
     def pytest_logwarning(self, message, code, nodeid, fslocation):
         self.sendevent("logwarning", message=message, code=code, nodeid=nodeid,
