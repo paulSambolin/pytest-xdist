@@ -64,7 +64,6 @@ class NodeManager(object):
             try:
                 nodes.append(self.setup_node(spec, putevent))
             except Exception as e:
-                print("error setting up %s: %s" % (spec, e))
                 self.trace("error setting up %s: %s" % (spec, e))
         return nodes
 
@@ -72,13 +71,10 @@ class NodeManager(object):
         gw = self.group.makegateway(spec)
         self.config.hook.pytest_xdist_newgateway(gateway=gw)
         self.rsync_roots(gw)
-        print('done with rsync', spec)
         node = WorkerController(self, gw, self.config, putevent)
         gw.node = node          # keep the node alive
-        print('setting up node', node)
         node.setup()
         self.trace("started node %r" % node)
-        print('started node', node)
         return node
 
     def teardown_nodes(self):
@@ -154,7 +150,6 @@ class NodeManager(object):
             source=source,
             gateways=[gateway],
         )
-        print('just called rsyncfinish')
 
 
 class HostRSync(execnet.RSync):
