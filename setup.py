@@ -5,7 +5,8 @@ install_requires = ['execnet>=1.1', 'pytest>=3.0.0', 'pytest-forked']
 
 setup(
     name="pytest-xdist",
-    use_scm_version={'write_to': 'xdist/_version.py'},
+    # use_scm_version={'write_to': 'xdist/_version.py'},
+    version='0.0.2-rc.1',
     description='py.test xdist plugin for distributed testing'
                 ' and loop-on-failing modes',
     long_description=open('README.rst').read(),
